@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { useLocation } from 'react-router-dom';
 
 interface Product {
@@ -48,7 +48,7 @@ const MovementRegistry: React.FC = () => {
 
   const fetchProducts = async () => {
     const token = localStorage.getItem('token');
-    const res = await axios.get('http://localhost:8080/api/products', {
+    const res = await api.get('/api/products', {
       headers: { Authorization: `Bearer ${token}` }
     });
     setProducts(res.data);
@@ -56,7 +56,7 @@ const MovementRegistry: React.FC = () => {
 
   const fetchHistory = async () => {
     const token = localStorage.getItem('token');
-    const res = await axios.get('http://localhost:8080/api/movements', {
+    const res = await api.get('/api/movements', {
       headers: { Authorization: `Bearer ${token}` }
     });
     setHistory(res.data);
@@ -67,7 +67,7 @@ const MovementRegistry: React.FC = () => {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/api/movements', formData, {
+      await api.post('/api/movements', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData({ ...formData, quantity: 1, reason: '' });

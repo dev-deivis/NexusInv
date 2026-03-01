@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import ProductForm from './ProductForm';
 import ConfirmModal from './ConfirmModal';
 
@@ -34,7 +34,7 @@ const ProductList: React.FC = () => {
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/products', {
+      const response = await api.get('/api/products', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProducts(response.data);
@@ -65,7 +65,7 @@ const ProductList: React.FC = () => {
     
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8080/api/products/${productToDelete.id}`, {
+      await api.delete(`/api/products/${productToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchProducts();

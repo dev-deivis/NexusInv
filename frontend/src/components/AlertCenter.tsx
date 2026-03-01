@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { useNavigate } from 'react-router-dom';
 
 interface Alert {
@@ -25,7 +25,7 @@ const AlertCenter: React.FC = () => {
   const fetchAlerts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/alerts', {
+      const response = await api.get('/api/alerts', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setAlerts(response.data);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface User {
   id?: number;
@@ -70,11 +70,11 @@ const UserForm: React.FC<UserFormProps> = ({ isOpen, onClose, onSuccess, userToE
     try {
       const token = localStorage.getItem('token');
       if (userToEdit?.id) {
-        await axios.put(`http://localhost:8080/api/users/${userToEdit.id}`, formData, {
+        await api.put(`/api/users/${userToEdit.id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('http://localhost:8080/api/users', formData, {
+        await api.post('/api/users', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface Product {
   id?: number;
@@ -44,7 +44,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
   const fetchNextSku = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8080/api/products/next-sku', {
+      const response = await api.get('/api/products/next-sku', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setFormData(prev => ({ ...prev, sku: response.data.sku }));
@@ -61,11 +61,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
     try {
       const token = localStorage.getItem('token');
       if (productToEdit?.id) {
-        await axios.put(`http://localhost:8080/api/products/${productToEdit.id}`, formData, {
+        await api.put(`/api/products/${productToEdit.id}`, formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       } else {
-        await axios.post('http://localhost:8080/api/products', formData, {
+        await api.post('/api/products', formData, {
           headers: { Authorization: `Bearer ${token}` }
         });
       }

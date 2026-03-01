@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface CategoryFormProps {
   isOpen: boolean;
@@ -20,7 +20,7 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ isOpen, onClose, onSuccess,
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/api/supply-chain/categories', {
+      await api.post('/api/supply-chain/categories', {
         name,
         description,
         parentId: parentId || null

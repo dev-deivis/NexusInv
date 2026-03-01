@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import UserForm from './UserForm';
 
 interface User {
@@ -29,7 +29,7 @@ const TeamAccess: React.FC = () => {
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/users', {
+      const res = await api.get('/api/users', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUsers(res.data);
@@ -58,7 +58,7 @@ const TeamAccess: React.FC = () => {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:8080/api/users/${user.id}/toggle`, {}, {
+      await api.patch(`/api/users/${user.id}/toggle`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchUsers();

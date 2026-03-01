@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Stats {
@@ -20,8 +20,8 @@ const Dashboard: React.FC = () => {
         const headers = { Authorization: `Bearer ${token}` };
         
         const [statsRes, weeklyRes] = await Promise.all([
-          axios.get('http://localhost:8080/api/reports/stats', { headers }),
-          axios.get('http://localhost:8080/api/reports/weekly', { headers })
+          api.get('/api/reports/stats', { headers }),
+          api.get('/api/reports/weekly', { headers })
         ]);
 
         setStats(statsRes.data);

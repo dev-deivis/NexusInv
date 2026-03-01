@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface Stat {
   totalValue: number;
@@ -22,7 +22,7 @@ const AnalyticsHub: React.FC = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.get('http://localhost:8080/api/reports/stats', {
+      const res = await api.get('/api/reports/stats', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setStats(res.data);

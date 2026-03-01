@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
@@ -13,7 +13,7 @@ const Sidebar: React.FC = () => {
     const fetchAlertCount = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:8080/api/alerts/count', {
+        const res = await api.get('/api/alerts/count', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setAlertCount(res.data.count);

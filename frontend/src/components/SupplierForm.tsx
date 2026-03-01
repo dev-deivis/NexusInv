@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 
 interface SupplierFormProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ isOpen, onClose, onSuccess 
     setIsLoading(true);
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8080/api/supply-chain/suppliers', formData, {
+      await api.post('/api/supply-chain/suppliers', formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       onSuccess();

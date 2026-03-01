@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import CategoryForm from './CategoryForm';
 import SupplierForm from './SupplierForm';
 
@@ -36,8 +36,8 @@ const SupplyChain: React.FC = () => {
       const headers = { Authorization: `Bearer ${token}` };
       
       const [catRes, supRes] = await Promise.all([
-        axios.get('http://localhost:8080/api/supply-chain/categories', { headers }),
-        axios.get('http://localhost:8080/api/supply-chain/suppliers', { headers })
+        api.get('/api/supply-chain/categories', { headers }),
+        api.get('/api/supply-chain/suppliers', { headers })
       ]);
 
       setCategories(catRes.data);

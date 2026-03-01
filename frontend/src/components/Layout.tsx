@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import axios from 'axios';
+import api from '../lib/api';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -14,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const res = await axios.get('http://localhost:8080/api/auth/me', {
+        const res = await api.get('/api/auth/me', {
           headers: { Authorization: `Bearer ${token}` }
         });
 
