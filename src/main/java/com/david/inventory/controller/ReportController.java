@@ -25,6 +25,11 @@ public class ReportController {
         return ResponseEntity.ok(reportService.getDashboardStats());
     }
 
+    @GetMapping("/weekly")
+    public ResponseEntity<List<Map<String, Object>>> getWeekly() {
+        return ResponseEntity.ok(reportService.getWeeklyStats());
+    }
+
     @GetMapping("/movements")
     public ResponseEntity<List<MovementResponse>> getMovements() {
         return ResponseEntity.ok(reportService.getMovementReport());

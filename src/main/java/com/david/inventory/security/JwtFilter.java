@@ -43,18 +43,26 @@ public class JwtFilter extends OncePerRequestFilter {
             userEmail = jwtUtil.extractUsername(jwt);
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                
+                // Si el usuario existe pero está desactivado, loadUserByUsername lanzará la excepción que pusimos antes
                 if (jwtUtil.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            null,
-                            userDetails.getAuthorities()
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
                     );
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
             }
+        } catch (RuntimeException e) {
+            if ("CUENTA_DESACTIVADA".equals(e.getMessage())) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.getWriter().write("Cuenta desactivada");
+                return;
+            }
         } catch (Exception e) {
-            // Log error or handle as needed
+            // Otros errores de JWT
         }
         filterChain.doFilter(request, response);
     }

@@ -3,9 +3,13 @@ package com.david.inventory.service.impl;
 import com.david.inventory.dto.request.ProductRequest;
 import com.david.inventory.dto.response.ProductResponse;
 import com.david.inventory.entity.Product;
+import com.david.inventory.entity.User;
+import com.david.inventory.entity.enums.UserRole;
 import com.david.inventory.repository.ProductRepository;
+import com.david.inventory.repository.UserRepository;
 import com.david.inventory.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,6 +21,24 @@ import java.util.stream.Collectors;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    private void checkPermission(String action) {
+        User user = getCurrentUser();
+        if (user.getRole() == UserRole.ADMIN) return;
+
+        if (action.equals("EDIT") && !user.isCanEditProducts()) {
+            throw new RuntimeException("Protocolo denegado: No posee privilegios de escritura en la red.");
+        }
+        if (action.equals("DELETE") && !user.isCanDeleteProducts()) {
+            throw new RuntimeException("Protocolo denegado: No posee privilegios de purga en la red.");
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -39,6 +61,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
+        checkPermission("EDIT");
         String generatedSku = getNextSku();
 
         Product product = Product.builder()
@@ -74,6 +97,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductResponse updateProduct(Long id, ProductRequest request) {
+        checkPermission("EDIT");
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
 
@@ -81,8 +105,6 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setUnitPrice(request.getUnitPrice());
         product.setMinStock(request.getMinStock());
-        // El stock actual no se debería editar aquí, sino vía movimientos, 
-        // pero para el CRUD inicial lo permitimos.
         product.setCurrentStock(request.getCurrentStock());
 
         return mapToResponse(productRepository.save(product));
@@ -91,10 +113,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public void deleteProduct(Long id) {
+        checkPermission("DELETE");
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
         
-        // Eliminación lógica
         product.setActive(false);
         productRepository.save(product);
     }

@@ -5,6 +5,7 @@ import com.david.inventory.dto.response.MovementResponse;
 import com.david.inventory.dto.response.ProductResponse;
 import com.david.inventory.entity.Product;
 import com.david.inventory.entity.enums.AlertStatus;
+import com.david.inventory.entity.enums.MovementType;
 import com.david.inventory.repository.AlertRepository;
 import com.david.inventory.repository.MovementRepository;
 import com.david.inventory.repository.ProductRepository;
@@ -14,9 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.TextStyle;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,8 +44,40 @@ public class ReportServiceImpl implements ReportService {
         stats.put("totalValue", totalValue);
         stats.put("activeAlerts", activeAlerts);
         stats.put("totalProducts", totalProducts);
-        // Mock turnover rate for now
         stats.put("turnoverRate", 4.2);
+        
+        return stats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getWeeklyStats() {
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        List<com.david.inventory.entity.InventoryMovement> movements = movementRepository.findByCreatedAtAfter(sevenDaysAgo);
+
+        List<Map<String, Object>> stats = new ArrayList<>();
+        
+        for (int i = 6; i >= 0; i--) {
+            LocalDateTime day = LocalDateTime.now().minusDays(i);
+            String dayName = day.getDayOfWeek().getDisplayName(TextStyle.SHORT, new Locale("es", "ES"));
+            
+            long entries = movements.stream()
+                    .filter(m -> m.getCreatedAt().toLocalDate().isEqual(day.toLocalDate()))
+                    .filter(m -> m.getType() == MovementType.ENTRY)
+                    .count();
+            
+            long exits = movements.stream()
+                    .filter(m -> m.getCreatedAt().toLocalDate().isEqual(day.toLocalDate()))
+                    .filter(m -> m.getType() == MovementType.EXIT)
+                    .count();
+
+            Map<String, Object> dayMap = new HashMap<>();
+            dayName = dayName.substring(0, 1).toUpperCase() + dayName.substring(1);
+            dayMap.put("name", dayName);
+            dayMap.put("entrada", entries);
+            dayMap.put("salida", exits);
+            stats.add(dayMap);
+        }
         
         return stats;
     }

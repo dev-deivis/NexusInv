@@ -13,5 +13,7 @@ public class UserResponse {
     private String role;
     private String department;
     private boolean active;
+    private boolean canEditProducts;
+    private boolean canDeleteProducts;
     private LocalDateTime createdAt;
 }

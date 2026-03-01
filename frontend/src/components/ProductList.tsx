@@ -22,6 +22,11 @@ const ProductList: React.FC = () => {
   const [productToDelete, setProductToDelete] = useState<{id: number, name: string} | null>(null);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
+  // Permisos del usuario actual
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const canEdit = currentUser.role === 'ADMIN' || currentUser.canEditProducts;
+  const canDelete = currentUser.role === 'ADMIN' || currentUser.canDeleteProducts;
+
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -182,20 +187,24 @@ const ProductList: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-all">
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleEditProduct(product); }}
-                        className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
-                        title="Editar Producto"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
-                      </button>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id, product.name); }}
-                        className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                        title="Eliminar Producto"
-                      >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
-                      </button>
+                      {canEdit && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleEditProduct(product); }}
+                          className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors"
+                          title="Editar Producto"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">edit</span>
+                        </button>
+                      )}
+                      {canDelete && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleDeleteProduct(product.id, product.name); }}
+                          className="size-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          title="Eliminar Producto"
+                        >
+                          <span className="material-symbols-outlined text-[18px]">delete</span>
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

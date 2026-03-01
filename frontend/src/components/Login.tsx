@@ -20,9 +20,9 @@ const Login: React.FC = () => {
         password,
       });
 
-      const { token, name, role } = response.data;
+      const { token, name, role, email: userEmail, canEditProducts, canDeleteProducts } = response.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify({ name, role, email }));
+      localStorage.setItem('user', JSON.stringify({ name, role, email: userEmail, canEditProducts, canDeleteProducts }));
       
       navigate('/dashboard');
       

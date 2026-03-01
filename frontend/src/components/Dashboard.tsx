@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface Stats {
   totalValue: number;
@@ -10,20 +11,26 @@ interface Stats {
 
 const Dashboard: React.FC = () => {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
   
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:8080/api/reports/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setStats(res.data);
+        const headers = { Authorization: `Bearer ${token}` };
+        
+        const [statsRes, weeklyRes] = await Promise.all([
+          axios.get('http://localhost:8080/api/reports/stats', { headers }),
+          axios.get('http://localhost:8080/api/reports/weekly', { headers })
+        ]);
+
+        setStats(statsRes.data);
+        setWeeklyData(weeklyRes.data);
       } catch (err) {
-        console.error('Error al cargar estadísticas');
+        console.error('Error al cargar datos del dashboard');
       }
     };
-    fetchStats();
+    fetchData();
   }, []);
 
   const currentDate = new Date().toLocaleDateString('es-ES', { 
@@ -131,17 +138,41 @@ const Dashboard: React.FC = () => {
         <div className="lg:col-span-2 glass-panel rounded-xl p-6 flex flex-col relative overflow-hidden border border-white/5 bg-white/[0.01]">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-sm font-bold text-white uppercase tracking-widest">Tráfico de Red Semanal</h3>
-            <div className="flex gap-4">
-              <span className="flex items-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                <div className="size-2 rounded-full bg-primary mr-2 shadow-[0_0_5px_rgba(46,117,182,0.5)]"></div> Entrada
-              </span>
-              <span className="flex items-center text-[10px] font-bold uppercase tracking-widest text-slate-500">
-                <div className="size-2 rounded-full bg-purple-500 mr-2 shadow-[0_0_5px_rgba(168,85,247,0.5)]"></div> Salida
-              </span>
-            </div>
           </div>
-          <div className="flex-1 w-full relative flex items-center justify-center border border-dashed border-white/10 rounded-xl bg-black/20">
-            <p className="text-slate-600 text-[10px] italic font-mono tracking-[0.3em] uppercase">Visualización de Flujo Encriptada</p>
+          <div className="flex-1 w-full min-h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={weeklyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94A3B8', fontSize: 10, fontWeight: 'bold' }} 
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: '#94A3B8', fontSize: 10 }} 
+                />
+                <Tooltip 
+                  cursor={{ fill: '#ffffff05' }}
+                  contentStyle={{ 
+                    backgroundColor: '#0F1117', 
+                    border: '1px solid #ffffff10',
+                    borderRadius: '8px',
+                    fontSize: '12px'
+                  }}
+                />
+                <Legend 
+                  verticalAlign="top" 
+                  align="right" 
+                  iconType="circle"
+                  wrapperStyle={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '1px', paddingBottom: '20px' }}
+                />
+                <Bar dataKey="entrada" name="Entrada" fill="#2E75B6" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="salida" name="Salida" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
 

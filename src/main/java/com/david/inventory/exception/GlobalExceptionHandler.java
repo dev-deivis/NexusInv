@@ -37,6 +37,17 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
+        Map<String, String> error = new HashMap<>();
+        if ("CUENTA_DESACTIVADA".equals(ex.getMessage())) {
+            error.put("message", "Acceso denegado: Esta cuenta ha sido desactivada por el administrador.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(error);
+        }
+        error.put("message", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleGeneralError(Exception ex) {
         Map<String, String> error = new HashMap<>();

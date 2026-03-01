@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import axios from 'axios';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -7,6 +8,35 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
+  useEffect(() => {
+    const syncUser = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const res = await axios.get('http://localhost:8080/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+
+        const userData = res.data;
+        localStorage.setItem('user', JSON.stringify({
+          name: userData.name,
+          role: userData.role,
+          email: userData.email,
+          canEditProducts: userData.canEditProducts,
+          canDeleteProducts: userData.canDeleteProducts
+        }));
+      } catch (err) {
+        console.error('Error sincronizando perfil de red');
+      }
+    };
+
+    syncUser();
+    // Opcional: Sincronizar cada 30 segundos por si el Admin cambia algo en vivo
+    const interval = setInterval(syncUser, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="text-slate-300 antialiased selection:bg-primary selection:text-white overflow-hidden h-screen flex bg-background-dark">
       {/* Decorative background blurs */}

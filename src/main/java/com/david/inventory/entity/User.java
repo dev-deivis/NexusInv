@@ -41,6 +41,12 @@ public class User {
 
     private String department;
 
+    @Builder.Default
+    private boolean canEditProducts = false;
+
+    @Builder.Default
+    private boolean canDeleteProducts = false;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

@@ -10,12 +10,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -43,6 +41,20 @@ public class AuthController {
                 .email(user.getEmail())
                 .name(user.getName())
                 .role(user.getRole().name())
+                .canEditProducts(user.isCanEditProducts())
+                .canDeleteProducts(user.isCanDeleteProducts())
+                .build());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
+        User user = userRepository.findByEmail(authentication.getName()).orElseThrow();
+        return ResponseEntity.ok(AuthResponse.builder()
+                .email(user.getEmail())
+                .name(user.getName())
+                .role(user.getRole().name())
+                .canEditProducts(user.isCanEditProducts())
+                .canDeleteProducts(user.isCanDeleteProducts())
                 .build());
     }
 }

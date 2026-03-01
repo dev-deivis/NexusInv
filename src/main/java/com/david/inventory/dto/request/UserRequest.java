@@ -22,4 +22,6 @@ public class UserRequest {
 
     private String department;
     private boolean active;
+    private boolean canEditProducts;
+    private boolean canDeleteProducts;
 }

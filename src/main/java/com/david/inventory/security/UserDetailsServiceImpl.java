@@ -23,7 +23,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
 
         if (!user.isActive()) {
-            throw new UsernameNotFoundException("User is deactivated: " + email);
+            throw new RuntimeException("CUENTA_DESACTIVADA");
         }
 
         return new org.springframework.security.core.userdetails.User(

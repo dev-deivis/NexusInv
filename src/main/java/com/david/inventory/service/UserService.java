@@ -9,6 +9,6 @@ public interface UserService {
     List<UserResponse> getAllUsers();
     UserResponse createUser(UserRequest request);
     UserResponse updateUser(Long id, UserRequest request);
-    void toggleUserStatus(Long id);
+    void toggleUserStatus(Long id, String currentUserEmail);
     void deleteUser(Long id);
 }

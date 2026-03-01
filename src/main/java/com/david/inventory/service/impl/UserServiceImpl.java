@@ -3,6 +3,7 @@ package com.david.inventory.service.impl;
 import com.david.inventory.dto.request.UserRequest;
 import com.david.inventory.dto.response.UserResponse;
 import com.david.inventory.entity.User;
+import com.david.inventory.entity.enums.UserRole;
 import com.david.inventory.repository.UserRepository;
 import com.david.inventory.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -35,12 +36,17 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("El email ya está registrado");
         }
 
+        // Si es ADMIN, forzar todos los permisos
+        boolean isMaster = request.getRole() == UserRole.ADMIN;
+
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .department(request.getDepartment())
+                .canEditProducts(isMaster || request.isCanEditProducts())
+                .canDeleteProducts(isMaster || request.isCanDeleteProducts())
                 .active(true)
                 .build();
 
@@ -53,9 +59,15 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
+        boolean isMaster = request.getRole() == UserRole.ADMIN;
+
         user.setName(request.getName());
         user.setRole(request.getRole());
         user.setDepartment(request.getDepartment());
+        
+        // Si es ADMIN, forzar. Si no, tomar lo que venga del formulario
+        user.setCanEditProducts(isMaster || request.isCanEditProducts());
+        user.setCanDeleteProducts(isMaster || request.isCanDeleteProducts());
         
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -66,9 +78,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void toggleUserStatus(Long id) {
+    public void toggleUserStatus(Long id, String currentUserEmail) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        if (user.getEmail().equals(currentUserEmail)) {
+            throw new RuntimeException("Protocolo de Autopreservación: No puede desactivar su propia cuenta.");
+        }
+
         user.setActive(!user.isActive());
         userRepository.save(user);
     }
@@ -87,6 +104,8 @@ public class UserServiceImpl implements UserService {
                 .role(user.getRole().name())
                 .department(user.getDepartment() != null ? user.getDepartment() : "N/A")
                 .active(user.isActive())
+                .canEditProducts(user.isCanEditProducts())
+                .canDeleteProducts(user.isCanDeleteProducts())
                 .createdAt(user.getCreatedAt())
                 .build();
     }

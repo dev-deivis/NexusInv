@@ -9,6 +9,7 @@ import java.util.Map;
 
 public interface ReportService {
     Map<String, Object> getDashboardStats();
+    List<Map<String, Object>> getWeeklyStats();
     List<MovementResponse> getMovementReport();
     List<ProductResponse> getStockValuationReport();
     List<AlertResponse> getLowStockReport();

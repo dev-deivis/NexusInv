@@ -35,8 +35,8 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/toggle")
-    public ResponseEntity<Void> toggleStatus(@PathVariable Long id) {
-        userService.toggleUserStatus(id);
+    public ResponseEntity<Void> toggleStatus(@PathVariable Long id, org.springframework.security.core.Authentication authentication) {
+        userService.toggleUserStatus(id, authentication.getName());
         return ResponseEntity.noContent().build();
     }
 

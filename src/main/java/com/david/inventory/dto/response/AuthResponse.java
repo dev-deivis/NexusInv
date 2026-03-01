@@ -14,4 +14,6 @@ public class AuthResponse {
     private String email;
     private String role;
     private String name;
+    private boolean canEditProducts;
+    private boolean canDeleteProducts;
 }
