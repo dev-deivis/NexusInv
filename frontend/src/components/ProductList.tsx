@@ -19,10 +19,10 @@ const ProductList: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [productToDelete, setProductToDelete] = useState<{id: number, name: string} | null>(null);
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
 
-  // Permisos del usuario actual
   const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
   const canEdit = currentUser.role === 'ADMIN' || currentUser.canEditProducts;
   const canDelete = currentUser.role === 'ADMIN' || currentUser.canDeleteProducts;
@@ -39,6 +39,27 @@ const ProductList: React.FC = () => {
       console.error('Error al cargar productos');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExport = async (type: 'excel' | 'pdf') => {
+    setIsExporting(true);
+    try {
+      const response = await api.get(`/api/reports/export/${type}`, {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `inventario_nexus.${type === 'excel' ? 'xlsx' : 'pdf'}`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      alert('Error al generar el reporte');
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -59,7 +80,6 @@ const ProductList: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!productToDelete) return;
-    
     try {
       await api.delete(`/api/products/${productToDelete.id}`);
       fetchProducts();
@@ -89,7 +109,7 @@ const ProductList: React.FC = () => {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
         <span className="size-1.5 rounded-full bg-emerald-500"></span>
         En Stock
       </span>
@@ -98,16 +118,21 @@ const ProductList: React.FC = () => {
 
   if (isLoading) return <div className="text-center p-10 text-slate-500 font-mono text-xs tracking-[0.3em] uppercase animate-pulse">Sincronizando Matriz...</div>;
 
+  const nextSku = products.length > 0 
+    ? `NEX-${(Math.max(...products.map(p => {
+        const num = parseInt(p.sku.replace('NEX-', ''));
+        return isNaN(num) ? 0 : num;
+      })) + 1).toString().padStart(4, '0')}`
+    : 'NEX-0001';
+
   return (
     <div className="flex flex-col h-full space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Header Area */}
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold text-white tracking-tight">Matriz de Productos</h2>
         <p className="text-sm text-slate-400 mt-1">Gestiona SKUs, niveles de stock y estado de inventario.</p>
       </div>
 
       <div className="glass-panel rounded-2xl flex flex-col overflow-hidden border border-white/5 bg-white/[0.01]">
-        {/* Toolbar */}
         <div className="p-5 border-b border-white/5 flex flex-wrap items-center justify-between gap-4 bg-white/[0.02]">
           <div className="flex items-center gap-3 flex-1 min-w-[300px]">
             <div className="relative w-[320px] group">
@@ -120,17 +145,29 @@ const ProductList: React.FC = () => {
                 type="text"
               />
             </div>
-            <div className="h-6 w-[1px] bg-white/10 mx-2"></div>
-            <select className="bg-black/20 border border-white/5 text-slate-300 text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-primary/50 cursor-pointer">
-              <option>Todas las Categorías</option>
-            </select>
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">download</span>
-              Exportar
-            </button>
+            <div className="flex bg-black/20 rounded-xl p-1 border border-white/5">
+              <button 
+                disabled={isExporting}
+                onClick={() => handleExport('excel')}
+                className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-emerald-400 hover:bg-emerald-500/10 transition-all flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[16px]">table_view</span>
+                Excel
+              </button>
+              <div className="w-[1px] bg-white/10 mx-1"></div>
+              <button 
+                disabled={isExporting}
+                onClick={() => handleExport('pdf')}
+                className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-all flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                PDF
+              </button>
+            </div>
+            
             <button 
               onClick={() => setIsModalOpen(true)}
               className="pl-3 pr-4 py-2.5 rounded-xl bg-primary hover:bg-blue-600 text-white text-sm font-bold tracking-tight shadow-lg shadow-primary/20 transition-all flex items-center gap-2"
@@ -141,7 +178,6 @@ const ProductList: React.FC = () => {
           </div>
         </div>
 
-        {/* Table Content */}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -203,34 +239,14 @@ const ProductList: React.FC = () => {
                   </td>
                 </tr>
               ))}
-              {products.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
-                    <div className="flex flex-col items-center opacity-20">
-                      <span className="material-symbols-outlined text-5xl mb-2">database_off</span>
-                      <p className="text-sm italic font-mono tracking-widest uppercase">Sin registros en la matriz</p>
-                    </div>
-                  </td>
-                </tr>
-              )}
             </tbody>
           </table>
         </div>
 
-        {/* Footer / Pagination */}
         <div className="p-4 border-t border-white/5 bg-white/[0.01] flex items-center justify-between">
           <span className="text-[10px] text-slate-500 uppercase tracking-widest">
             Mostrando <span className="text-white font-bold">{products.length}</span> activos de la red
           </span>
-          <div className="flex items-center gap-2">
-            <button className="size-8 rounded-lg border border-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors disabled:opacity-30" disabled>
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-            </button>
-            <button className="size-8 rounded-lg bg-primary text-white text-[10px] font-bold shadow-lg shadow-primary/20">1</button>
-            <button className="size-8 rounded-lg border border-white/5 flex items-center justify-center text-slate-500 hover:text-white transition-colors disabled:opacity-30" disabled>
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-            </button>
-          </div>
         </div>
       </div>
 
@@ -239,6 +255,7 @@ const ProductList: React.FC = () => {
         onClose={handleCloseModal} 
         onSuccess={fetchProducts} 
         productToEdit={productToEdit}
+        nextSuggestedSku={nextSku}
       />
 
       <ConfirmModal

@@ -5,11 +5,15 @@ import com.david.inventory.dto.response.MovementResponse;
 import com.david.inventory.dto.response.ProductResponse;
 import com.david.inventory.service.ReportService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -43,5 +47,31 @@ public class ReportController {
     @GetMapping("/low-stock")
     public ResponseEntity<List<AlertResponse>> getLowStock() {
         return ResponseEntity.ok(reportService.getLowStockReport());
+    }
+
+    @GetMapping("/export/excel")
+    public ResponseEntity<InputStreamResource> exportExcel() {
+        ByteArrayInputStream in = reportService.exportProductsToExcel();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=inventario_nexus.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(in));
+    }
+
+    @GetMapping("/export/pdf")
+    public ResponseEntity<InputStreamResource> exportPdf() {
+        ByteArrayInputStream in = reportService.exportProductsToPdf();
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=inventario_nexus.pdf");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(new InputStreamResource(in));
     }
 }

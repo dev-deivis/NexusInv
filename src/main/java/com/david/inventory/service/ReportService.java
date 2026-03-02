@@ -4,6 +4,7 @@ import com.david.inventory.dto.response.AlertResponse;
 import com.david.inventory.dto.response.MovementResponse;
 import com.david.inventory.dto.response.ProductResponse;
 
+import java.io.ByteArrayInputStream;
 import java.util.List;
 import java.util.Map;
 
@@ -13,4 +14,8 @@ public interface ReportService {
     List<MovementResponse> getMovementReport();
     List<ProductResponse> getStockValuationReport();
     List<AlertResponse> getLowStockReport();
+    
+    // Métodos para exportación
+    ByteArrayInputStream exportProductsToExcel();
+    ByteArrayInputStream exportProductsToPdf();
 }
