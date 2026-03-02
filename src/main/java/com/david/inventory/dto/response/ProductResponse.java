@@ -16,6 +16,7 @@ public class ProductResponse {
     private BigDecimal unitPrice;
     private Integer currentStock;
     private Integer minStock;
+    private Integer maxStock;
     private boolean active;
     private String categoryName;
     private String supplierName;

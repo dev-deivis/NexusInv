@@ -13,6 +13,7 @@ public class AlertResponse {
     private String productSku;
     private Integer currentStock;
     private Integer minStock;
+    private Integer maxStock;
     private String alertType;
     private String status;
     private LocalDateTime createdAt;

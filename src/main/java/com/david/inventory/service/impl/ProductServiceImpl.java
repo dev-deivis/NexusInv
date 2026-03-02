@@ -5,8 +5,11 @@ import com.david.inventory.dto.response.ProductResponse;
 import com.david.inventory.entity.Product;
 import com.david.inventory.entity.User;
 import com.david.inventory.entity.enums.UserRole;
+import com.david.inventory.repository.CategoryRepository;
 import com.david.inventory.repository.ProductRepository;
+import com.david.inventory.repository.SupplierRepository;
 import com.david.inventory.repository.UserRepository;
+import com.david.inventory.service.AlertService; // <--- Añadido
 import com.david.inventory.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +25,9 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final SupplierRepository supplierRepository;
+    private final AlertService alertService; // <--- Inyectado
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -62,19 +68,35 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public ProductResponse createProduct(ProductRequest request) {
         checkPermission("EDIT");
-        String generatedSku = getNextSku();
+        
+        String finalSku = (request.getSku() != null && !request.getSku().isBlank()) 
+                ? request.getSku() 
+                : getNextSku();
 
         Product product = Product.builder()
                 .name(request.getName())
                 .description(request.getDescription())
-                .sku(generatedSku)
+                .sku(finalSku)
                 .unitPrice(request.getUnitPrice())
                 .currentStock(request.getCurrentStock())
                 .minStock(request.getMinStock())
+                .maxStock(request.getMaxStock())
                 .active(true)
                 .build();
 
-        return mapToResponse(productRepository.save(product));
+        if (request.getCategoryId() != null) {
+            product.setCategory(categoryRepository.findById(request.getCategoryId()).orElse(null));
+        }
+        if (request.getSupplierId() != null) {
+            product.setSupplier(supplierRepository.findById(request.getSupplierId()).orElse(null));
+        }
+
+        Product savedProduct = productRepository.save(product);
+        
+        // REVISIÓN DE ALERTAS AL CREAR
+        alertService.processProductStock(savedProduct);
+
+        return mapToResponse(savedProduct);
     }
 
     @Override
@@ -90,8 +112,8 @@ public class ProductServiceImpl implements ProductService {
                     }
                 })
                 .max(Integer::compare)
-                .map(max -> String.format("NEX-%03d", max + 1))
-                .orElse("NEX-001");
+                .map(max -> String.format("NEX-%04d", max + 1))
+                .orElse("NEX-0001");
     }
 
     @Override
@@ -105,9 +127,22 @@ public class ProductServiceImpl implements ProductService {
         product.setDescription(request.getDescription());
         product.setUnitPrice(request.getUnitPrice());
         product.setMinStock(request.getMinStock());
+        product.setMaxStock(request.getMaxStock());
         product.setCurrentStock(request.getCurrentStock());
 
-        return mapToResponse(productRepository.save(product));
+        if (request.getCategoryId() != null) {
+            product.setCategory(categoryRepository.findById(request.getCategoryId()).orElse(null));
+        }
+        if (request.getSupplierId() != null) {
+            product.setSupplier(supplierRepository.findById(request.getSupplierId()).orElse(null));
+        }
+
+        Product updatedProduct = productRepository.save(product);
+        
+        // REVISIÓN DE ALERTAS AL ACTUALIZAR
+        alertService.processProductStock(updatedProduct);
+
+        return mapToResponse(updatedProduct);
     }
 
     @Override
@@ -130,6 +165,7 @@ public class ProductServiceImpl implements ProductService {
                 .unitPrice(product.getUnitPrice())
                 .currentStock(product.getCurrentStock())
                 .minStock(product.getMinStock())
+                .maxStock(product.getMaxStock())
                 .active(product.isActive())
                 .categoryName(product.getCategory() != null ? product.getCategory().getName() : "Sin Categoría")
                 .supplierName(product.getSupplier() != null ? product.getSupplier().getCompanyName() : "Sin Proveedor")

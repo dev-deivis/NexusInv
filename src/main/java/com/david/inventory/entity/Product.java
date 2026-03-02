@@ -42,6 +42,9 @@ public class Product {
     private Integer minStock;
 
     @Column(nullable = false)
+    private Integer maxStock;
+
+    @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
 

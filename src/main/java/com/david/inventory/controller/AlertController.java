@@ -19,7 +19,8 @@ public class AlertController {
 
     private final AlertService alertService;
 
-    @GetMapping
+    // Ajustado para coincidir con la llamada del frontend /api/alerts/active
+    @GetMapping("/active")
     public ResponseEntity<List<AlertResponse>> getActiveAlerts() {
         return ResponseEntity.ok(alertService.getActiveAlerts());
     }

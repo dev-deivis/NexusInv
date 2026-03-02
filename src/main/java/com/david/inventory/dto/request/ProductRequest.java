@@ -30,6 +30,10 @@ public class ProductRequest {
     @Min(value = 0, message = "El stock mínimo no puede ser negativo")
     private Integer minStock;
 
+    @NotNull(message = "El stock máximo es obligatorio")
+    @Min(value = 1, message = "El stock máximo debe ser al menos 1")
+    private Integer maxStock;
+
     private Long categoryId;
     private Long supplierId;
 }

@@ -33,25 +33,47 @@ public class AlertServiceImpl implements AlertService {
     @Override
     @Transactional
     public void processProductStock(Product product) {
+        // Lógica de Stock Bajo
         if (product.getCurrentStock() <= product.getMinStock()) {
-            // Crear alerta si no existe una activa
-            if (alertRepository.findByProductIdAndStatus(product.getId(), AlertStatus.ACTIVE).isEmpty()) {
-                StockAlert alert = StockAlert.builder()
-                        .product(product)
-                        .alertType(AlertType.LOW_STOCK)
-                        .status(AlertStatus.ACTIVE)
-                        .build();
-                alertRepository.save(alert);
-            }
-        } else {
-            // Resolver alerta si existe una activa
-            alertRepository.findByProductIdAndStatus(product.getId(), AlertStatus.ACTIVE)
-                    .ifPresent(alert -> {
-                        alert.setStatus(AlertStatus.RESOLVED);
-                        alert.setResolvedAt(LocalDateTime.now());
-                        alertRepository.save(alert);
-                    });
+            createAlertIfNeeded(product, AlertType.LOW_STOCK);
+        } 
+        // Lógica de Exceso de Stock
+        else if (product.getCurrentStock() >= product.getMaxStock()) {
+            createAlertIfNeeded(product, AlertType.EXCESS_STOCK);
+        } 
+        // Lógica de Resolución (Stock Normal)
+        else {
+            resolveActiveAlerts(product);
         }
+    }
+
+    private void createAlertIfNeeded(Product product, AlertType type) {
+        // Solo creamos si no hay una alerta ACTIVA del MISMO tipo
+        boolean exists = alertRepository.findByProductIdAndStatus(product.getId(), AlertStatus.ACTIVE)
+                .stream()
+                .anyMatch(a -> a.getAlertType() == type);
+
+        if (!exists) {
+            // Antes de crear una nueva, resolvemos las que sean de otro tipo (ej. si pasamos de stock bajo a stock normal)
+            resolveActiveAlerts(product);
+
+            StockAlert alert = StockAlert.builder()
+                    .product(product)
+                    .alertType(type)
+                    .status(AlertStatus.ACTIVE)
+                    .build();
+            alertRepository.saveAndFlush(alert);
+        }
+    }
+
+    private void resolveActiveAlerts(Product product) {
+        alertRepository.findByProductIdAndStatus(product.getId(), AlertStatus.ACTIVE)
+                .stream()
+                .forEach(alert -> {
+                    alert.setStatus(AlertStatus.RESOLVED);
+                    alert.setResolvedAt(LocalDateTime.now());
+                    alertRepository.saveAndFlush(alert);
+                });
     }
 
     @Override
@@ -68,6 +90,7 @@ public class AlertServiceImpl implements AlertService {
                 .productSku(alert.getProduct().getSku())
                 .currentStock(alert.getProduct().getCurrentStock())
                 .minStock(alert.getProduct().getMinStock())
+                .maxStock(alert.getProduct().getMaxStock()) // <--- CORRECCIÓN: Incluido maxStock
                 .alertType(alert.getAlertType().name())
                 .status(alert.getStatus().name())
                 .createdAt(alert.getCreatedAt())
