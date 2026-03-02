@@ -10,11 +10,13 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Optimización extrema para la capa gratuita de Render (512MB)
-# -XX:+UseSerialGC: Consume mucho menos RAM que el recolector por defecto
-# -Xss256k: Reduce el espacio de memoria por cada hilo de ejecución
+# Configuración de Producción
+ENV SPRING_PROFILES_ACTIVE=prod
+# Optimización de memoria
 ENV JAVA_OPTS="-Xmx300m -Xss256k -XX:+UseSerialGC"
 
-# Render asigna dinámicamente un puerto mediante la variable PORT
+# Exponer el puerto
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -jar app.jar"]
+
+# Comando de inicio limpio
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
