@@ -12,5 +12,5 @@ COPY --from=build /app/target/*.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
-# Simplificamos el arranque para dejar que el OS maneje la red (DNS)
-ENTRYPOINT ["java", "-Xmx300m", "-Xss512k", "-XX:+UseSerialGC", "-Dserver.port=${PORT:-8080}", "-Dserver.address=0.0.0.0", "-jar", "app.jar"]
+# Forzamos IPv4 y optimizamos RAM al máximo
+ENTRYPOINT ["sh", "-c", "java -Xmx256m -Xss512k -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
