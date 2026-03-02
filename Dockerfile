@@ -6,13 +6,19 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # Stage 2: Run
-FROM eclipse-temurin:17-jre-jammy
+FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Configuración de entorno
+# Configuración de producción
 ENV SPRING_PROFILES_ACTIVE=prod
+# Render requiere que la app escuche en 0.0.0.0
+ENV SERVER_ADDRESS=0.0.0.0
 
-# Comando de inicio con debug y optimización de memoria
-# Agregamos -Dserver.port=${PORT} para asegurar que Spring use el puerto de Render
-ENTRYPOINT ["sh", "-c", "java -Xmx300m -Xss512k -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT:-8080} -jar app.jar"]
+# Optimización de memoria
+ENV JAVA_OPTS="-Xmx300m -Xss512k -XX:+UseSerialGC"
+
+EXPOSE 8080
+
+# Iniciar con el puerto dinámico de Render
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
