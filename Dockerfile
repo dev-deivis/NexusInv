@@ -10,10 +10,7 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Configuración de entorno
 ENV SPRING_PROFILES_ACTIVE=prod
 
-# OPTIMIZACIÓN DE RED Y MEMORIA
-# -Djava.net.preferIPv4Stack=true: Obliga a usar IPv4 (soluciona Network Unreachable)
-# -XX:+UseSerialGC: Ahorra RAM
-ENTRYPOINT ["sh", "-c", "java -Xmx300m -Xss512k -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
+# Simplificamos el arranque para dejar que el OS maneje la red (DNS)
+ENTRYPOINT ["java", "-Xmx300m", "-Xss512k", "-XX:+UseSerialGC", "-Dserver.port=${PORT:-8080}", "-Dserver.address=0.0.0.0", "-jar", "app.jar"]
