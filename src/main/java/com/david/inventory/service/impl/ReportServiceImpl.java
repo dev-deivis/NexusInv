@@ -10,7 +10,12 @@ import com.david.inventory.repository.AlertRepository;
 import com.david.inventory.repository.MovementRepository;
 import com.david.inventory.repository.ProductRepository;
 import com.david.inventory.service.ReportService;
-import com.lowagie.text.*;
+import com.lowagie.text.Document;
+import com.lowagie.text.Element;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
@@ -134,25 +139,23 @@ public class ReportServiceImpl implements ReportService {
         try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = workbook.createSheet("Inventario NEXUS");
 
-            // Cabeceras
             Row headerRow = sheet.createRow(0);
             String[] columns = {"ID", "SKU", "Nombre", "Categoría", "Stock Actual", "Precio Unitario", "Valor Total"};
             
             CellStyle headerStyle = workbook.createCellStyle();
             headerStyle.setFillForegroundColor(IndexedColors.BLUE_GREY.getIndex());
             headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-            Font font = workbook.createFont();
+            org.apache.poi.ss.usermodel.Font font = workbook.createFont();
             font.setColor(IndexedColors.WHITE.getIndex());
             font.setBold(true);
             headerStyle.setFont(font);
 
             for (int i = 0; i < columns.length; i++) {
-                Cell cell = headerRow.createCell(i);
+                org.apache.poi.ss.usermodel.Cell cell = headerRow.createCell(i);
                 cell.setCellValue(columns[i]);
                 cell.setCellStyle(headerStyle);
             }
 
-            // Datos
             List<Product> products = productRepository.findByActiveTrue();
             int rowIdx = 1;
             for (Product product : products) {
@@ -186,16 +189,14 @@ public class ReportServiceImpl implements ReportService {
             PdfWriter.getInstance(document, out);
             document.open();
 
-            // Título
-            Font fontTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
+            com.lowagie.text.Font fontTitle = FontFactory.getFont(FontFactory.HELVETICA_BOLD);
             fontTitle.setSize(18);
             Paragraph title = new Paragraph("Reporte de Inventario - NEXUS", fontTitle);
-            title.setAlignment(Paragraph.ALIGN_CENTER);
+            title.setAlignment(Element.ALIGN_CENTER);
             document.add(title);
             document.add(new Paragraph("Fecha: " + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))));
             document.add(new Paragraph(" "));
 
-            // Tabla
             PdfPTable table = new PdfPTable(6);
             table.setWidthPercentage(100);
             table.setWidths(new float[]{1, 3, 4, 3, 2, 3});

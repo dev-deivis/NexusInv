@@ -12,11 +12,6 @@ interface Supplier {
   companyName: string;
 }
 
-interface Product {
-  id: number;
-  sku: string;
-}
-
 interface ProductFormProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,7 +20,13 @@ interface ProductFormProps {
   nextSuggestedSku?: string;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, productToEdit, nextSuggestedSku }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ 
+  isOpen, 
+  onClose, 
+  onSuccess, 
+  productToEdit, 
+  nextSuggestedSku 
+}) => {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
@@ -45,6 +46,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
     if (isOpen) {
       fetchCategories();
       fetchSuppliers();
+      
       if (productToEdit) {
         setFormData({
           name: productToEdit.name,
@@ -58,42 +60,21 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
           supplierId: productToEdit.supplierId?.toString() || ''
         });
       } else {
-        generateNextSku();
+        // Usamos la prop que viene del padre (ProductList)
+        setFormData({ 
+          name: '', 
+          sku: nextSuggestedSku || 'NEX-0001', 
+          description: '', 
+          unitPrice: 0, 
+          currentStock: 0,
+          minStock: 0, 
+          maxStock: 100,
+          categoryId: '',
+          supplierId: ''
+        });
       }
     }
-  }, [isOpen, productToEdit]);
-
-  const generateNextSku = async () => {
-    try {
-      const res = await api.get('/api/products');
-      const products: Product[] = res.data;
-      
-      // Lógica de Negocio: NEX- + (Número de productos + 1)
-      // Buscamos el número más alto actual que empiece con NEX-
-      const lastNum = products.reduce((acc, p) => {
-        if (!p.sku || !p.sku.startsWith('NEX-')) return acc;
-        const num = parseInt(p.sku.replace('NEX-', ''));
-        return !isNaN(num) && num > acc ? num : acc;
-      }, 0);
-      
-      const nextNum = (lastNum + 1).toString().padStart(4, '0');
-      
-      setFormData(prev => ({ 
-        ...prev, 
-        name: '', 
-        sku: `NEX-${nextNum}`, 
-        description: '', 
-        unitPrice: 0, 
-        currentStock: 0,
-        minStock: 0, 
-        maxStock: 100,
-        categoryId: '',
-        supplierId: ''
-      }));
-    } catch (err) {
-      setFormData(prev => ({ ...prev, sku: 'NEX-0001' }));
-    }
-  };
+  }, [isOpen, productToEdit, nextSuggestedSku]);
 
   const fetchCategories = async () => {
     try {
@@ -177,7 +158,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
                 readOnly
                 className="w-full bg-black/40 border border-white/5 rounded-xl px-4 py-2.5 text-slate-400 font-mono focus:outline-none cursor-not-allowed opacity-80"
                 value={formData.sku}
-                placeholder="Calculando SKU..."
               />
               <p className="text-[9px] text-slate-600 ml-1 italic">Identificador único inmutable</p>
             </div>
