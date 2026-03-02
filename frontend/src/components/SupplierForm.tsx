@@ -13,47 +13,38 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ isOpen, onClose, onSuccess 
     contactName: '',
     email: '',
     phone: '',
-    address: '',
-    notes: ''
+    address: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      await api.post('/api/supply-chain/suppliers', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/api/supply-chain/suppliers', formData);
+      setFormData({ companyName: '', contactName: '', email: '', phone: '', address: '' });
       onSuccess();
       onClose();
-      setFormData({ companyName: '', contactName: '', email: '', phone: '', address: '', notes: '' });
     } catch (err) {
-      alert('Error al registrar el proveedor');
+      alert('Error al registrar proveedor');
     } finally {
       setIsLoading(false);
     }
   };
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background-dark/80 backdrop-blur-sm">
       <div className="glass-panel w-full max-w-md bg-glass-gradient rounded-2xl p-8 shadow-2xl animate-in fade-in zoom-in duration-200">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-lg font-bold text-white tracking-tight uppercase italic">Vincular Nuevo Proveedor</h2>
-          <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors">
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
-
+        <h2 className="text-xl font-bold text-white mb-6 uppercase italic tracking-tight">Vincular Proveedor</h2>
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Nombre de Empresa</label>
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Razón Social</label>
             <input
               type="text"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white focus:outline-none focus:border-primary transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-all"
               value={formData.companyName}
               onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
               required
@@ -62,19 +53,20 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ isOpen, onClose, onSuccess 
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Contacto</label>
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Contacto</label>
               <input
                 type="text"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-all text-sm"
                 value={formData.contactName}
                 onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
+                required
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Teléfono</label>
+              <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Teléfono</label>
               <input
                 type="text"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary transition-all"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-all text-sm font-mono"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               />
@@ -82,32 +74,42 @@ const SupplierForm: React.FC<SupplierFormProps> = ({ isOpen, onClose, onSuccess 
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Email de Enlace</label>
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Email Corporativo</label>
             <input
               type="email"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary transition-all"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-all font-mono text-sm"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
             />
           </div>
 
           <div className="space-y-1">
-            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Dirección Física</label>
-            <input
-              type="text"
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2 text-white text-sm focus:outline-none focus:border-primary transition-all"
+            <label className="text-[10px] uppercase tracking-widest text-slate-500 font-bold ml-1">Ubicación / Dirección</label>
+            <textarea
+              rows={2}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-primary transition-all text-sm resize-none"
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 bg-primary-gradient rounded-xl text-white font-bold text-xs tracking-widest uppercase shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all disabled:opacity-50"
-          >
-            {isLoading ? 'Transmitiendo...' : 'Confirmar Vínculo'}
-          </button>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-3 px-4 rounded-xl border border-white/10 text-slate-400 font-bold text-xs uppercase tracking-widest hover:bg-white/5 transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-[2] py-3 px-4 bg-primary-gradient rounded-xl text-white font-bold text-xs uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all disabled:opacity-50"
+            >
+              {isLoading ? 'Registrando...' : 'Confirmar Vínculo'}
+            </button>
+          </div>
         </form>
       </div>
     </div>
