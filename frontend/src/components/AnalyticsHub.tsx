@@ -21,10 +21,7 @@ const AnalyticsHub: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const res = await api.get('/api/reports/stats', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get('/api/reports/stats');
       setStats(res.data);
     } catch (err) {
       console.error('Error al cargar estadísticas');
@@ -34,11 +31,7 @@ const AnalyticsHub: React.FC = () => {
   const generateReport = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = `http://localhost:8080/api/reports/${reportType}`;
-      const res = await axios.get(endpoint, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.get(`/api/reports/${reportType}`);
       setData(res.data);
     } catch (err) {
       console.error('Error al generar reporte');

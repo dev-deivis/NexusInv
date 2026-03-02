@@ -33,10 +33,7 @@ const ProductList: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await api.get('/api/products', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/api/products');
       setProducts(response.data);
     } catch (err) {
       console.error('Error al cargar productos');
@@ -64,10 +61,7 @@ const ProductList: React.FC = () => {
     if (!productToDelete) return;
     
     try {
-      const token = localStorage.getItem('token');
-      await api.delete(`/api/products/${productToDelete.id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.delete(`/api/products/${productToDelete.id}`);
       fetchProducts();
     } catch (err) {
       console.error('Error al eliminar el activo');

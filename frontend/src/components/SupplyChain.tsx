@@ -32,12 +32,9 @@ const SupplyChain: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const headers = { Authorization: `Bearer ${token}` };
-      
       const [catRes, supRes] = await Promise.all([
-        api.get('/api/supply-chain/categories', { headers }),
-        api.get('/api/supply-chain/suppliers', { headers })
+        api.get('/api/supply-chain/categories'),
+        api.get('/api/supply-chain/suppliers')
       ]);
 
       setCategories(catRes.data);

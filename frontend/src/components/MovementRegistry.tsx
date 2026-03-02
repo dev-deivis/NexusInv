@@ -47,29 +47,28 @@ const MovementRegistry: React.FC = () => {
   }, [location.state, products]);
 
   const fetchProducts = async () => {
-    const token = localStorage.getItem('token');
-    const res = await api.get('/api/products', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setProducts(res.data);
+    try {
+      const res = await api.get('/api/products');
+      setProducts(res.data);
+    } catch (err) {
+      console.error('Error al cargar productos');
+    }
   };
 
   const fetchHistory = async () => {
-    const token = localStorage.getItem('token');
-    const res = await api.get('/api/movements', {
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setHistory(res.data);
+    try {
+      const res = await api.get('/api/movements');
+      setHistory(res.data);
+    } catch (err) {
+      console.error('Error al cargar historial');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      await api.post('/api/movements', formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/api/movements', formData);
       setFormData({ ...formData, quantity: 1, reason: '' });
       fetchHistory();
     } catch (err) {
