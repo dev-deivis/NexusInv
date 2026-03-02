@@ -10,15 +10,10 @@ FROM eclipse-temurin:17-jdk-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Configuración de producción
+# Configuración de entorno
 ENV SPRING_PROFILES_ACTIVE=prod
-# Render requiere que la app escuche en 0.0.0.0
-ENV SERVER_ADDRESS=0.0.0.0
 
-# Optimización de memoria
-ENV JAVA_OPTS="-Xmx300m -Xss512k -XX:+UseSerialGC"
-
-EXPOSE 8080
-
-# Iniciar con el puerto dinámico de Render
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
+# OPTIMIZACIÓN DE RED Y MEMORIA
+# -Djava.net.preferIPv4Stack=true: Obliga a usar IPv4 (soluciona Network Unreachable)
+# -XX:+UseSerialGC: Ahorra RAM
+ENTRYPOINT ["sh", "-c", "java -Xmx300m -Xss512k -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
