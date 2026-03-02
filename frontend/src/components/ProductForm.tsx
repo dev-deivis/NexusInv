@@ -137,7 +137,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, p
     }
   };
 
-  const renderCategoryOptions = (cats: Category[], depth = 0): JSX.Element[] => {
+  const renderCategoryOptions = (cats: Category[], depth = 0): React.ReactElement[] => {
     return cats.flatMap(cat => [
       <option key={cat.id} value={cat.id}>
         {'\u00A0'.repeat(depth * 4)}{depth > 0 ? '↳ ' : ''}{cat.name}
