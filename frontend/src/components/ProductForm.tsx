@@ -22,9 +22,10 @@ interface ProductFormProps {
   onClose: () => void;
   onSuccess: () => void;
   productToEdit?: any | null;
+  nextSuggestedSku?: string;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, productToEdit }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ isOpen, onClose, onSuccess, productToEdit, nextSuggestedSku }) => {
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
