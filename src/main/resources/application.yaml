@@ -19,9 +19,12 @@ spring:
 
 server:
   port: ${PORT:8080}
+  error:
+    include-message: always
 
 logging:
   level:
     root: INFO
-    org.springframework.web: INFO
-    org.hibernate.SQL: ERROR
+    org.springframework: INFO
+    org.hibernate: ERROR
+    com.david.inventory: DEBUG

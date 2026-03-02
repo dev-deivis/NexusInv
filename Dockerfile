@@ -10,13 +10,9 @@ FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-# Configuración de Producción
+# Configuración de entorno
 ENV SPRING_PROFILES_ACTIVE=prod
-# Optimización de memoria
-ENV JAVA_OPTS="-Xmx300m -Xss256k -XX:+UseSerialGC"
 
-# Exponer el puerto
-EXPOSE 8080
-
-# Comando de inicio limpio
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+# Comando de inicio con debug y optimización de memoria
+# Agregamos -Dserver.port=${PORT} para asegurar que Spring use el puerto de Render
+ENTRYPOINT ["sh", "-c", "java -Xmx300m -Xss512k -XX:+UseSerialGC -Djava.security.egd=file:/dev/./urandom -Dserver.port=${PORT:-8080} -jar app.jar"]

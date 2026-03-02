@@ -1,23 +1,30 @@
 spring:
-    datasource:
-        url: ${DB_URL}
-        username: ${DB_USERNAME}
-        password: ${DB_PASSWORD}
-        driver-class-name: org.postgresql.Driver
-        hikari:
-            connection-timeout: 30000
-            maximum-pool-size: 5
+  datasource:
+    url: ${DB_URL}?sslmode=require
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-timeout: 30000
+      maximum-pool-size: 3
+      minimum-idle: 1
 
-    jpa:
-        hibernate:
-            ddl-auto: validate
-        show-sql: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
-    flyway:
-        enabled: true
-        baseline-on-migrate: true
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    # Esto ayuda si hubo problemas manuales en la DB
+    validate-on-migrate: false
 
 logging:
-    level:
-        com.david.inventory: INFO
-        org.hibernate.SQL: WARN
+  level:
+    root: INFO
+    com.david.inventory: DEBUG
+    org.flywaydb: DEBUG
