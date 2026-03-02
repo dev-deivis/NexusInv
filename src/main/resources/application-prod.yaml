@@ -6,11 +6,10 @@ spring:
     driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 30000
-      maximum-pool-size: 5
+      maximum-pool-size: 3
       minimum-idle: 1
       idle-timeout: 600000
       max-lifetime: 1800000
-      keepalive-time: 60000
 
   jpa:
     hibernate:
@@ -21,6 +20,10 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         temp:
           use_jdbc_metadata_defaults: false
+        # Optimización de memoria para Hibernate
+        hibernate.jdbc.batch_size: 20
+        hibernate.order_inserts: true
+        hibernate.order_updates: true
 
   flyway:
     enabled: true
@@ -35,3 +38,4 @@ logging:
   level:
     root: INFO
     com.david.inventory: INFO
+    org.flywaydb: INFO

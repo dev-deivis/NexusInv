@@ -12,5 +12,8 @@ COPY --from=build /app/target/*.jar app.jar
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
-# Ajustamos memoria para Render (Free Tier es 512MB)
-ENTRYPOINT ["sh", "-c", "java -Xmx384m -Xms128m -Djava.net.preferIPv4Stack=true -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
+# Ajustes ultra-ligeros para Render Free Tier (512MB)
+# -Xmx320m: dejamos margen para el sistema operativo
+# -XX:+UseSerialGC: recolector de basura que consume menos RAM
+# -Xss512k: reducimos el stack size de cada hilo
+ENTRYPOINT ["sh", "-c", "java -Xmx320m -Xms128m -Xss512k -XX:+UseSerialGC -Djava.net.preferIPv4Stack=true -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]

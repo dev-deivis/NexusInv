@@ -9,9 +9,9 @@ import com.david.inventory.repository.CategoryRepository;
 import com.david.inventory.repository.ProductRepository;
 import com.david.inventory.repository.SupplierRepository;
 import com.david.inventory.repository.UserRepository;
-import com.david.inventory.service.AlertService; // <--- Añadido
+import com.david.inventory.service.AlertService;
 import com.david.inventory.service.ProductService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,14 +20,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final SupplierRepository supplierRepository;
-    private final AlertService alertService; // <--- Inyectado
+    private final AlertService alertService;
+
+    // Constructor manual para inyección @Lazy y evitar bloqueos en el arranque
+    public ProductServiceImpl(
+            ProductRepository productRepository,
+            UserRepository userRepository,
+            CategoryRepository categoryRepository,
+            SupplierRepository supplierRepository,
+            @Lazy AlertService alertService) {
+        this.productRepository = productRepository;
+        this.userRepository = userRepository;
+        this.categoryRepository = categoryRepository;
+        this.supplierRepository = supplierRepository;
+        this.alertService = alertService;
+    }
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -92,8 +105,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Product savedProduct = productRepository.save(product);
-        
-        // REVISIÓN DE ALERTAS AL CREAR
         alertService.processProductStock(savedProduct);
 
         return mapToResponse(savedProduct);
@@ -138,8 +149,6 @@ public class ProductServiceImpl implements ProductService {
         }
 
         Product updatedProduct = productRepository.save(product);
-        
-        // REVISIÓN DE ALERTAS AL ACTUALIZAR
         alertService.processProductStock(updatedProduct);
 
         return mapToResponse(updatedProduct);
